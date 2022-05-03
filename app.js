@@ -4,7 +4,6 @@ const qs = require('qs');
 const url = require('url');
 const localStorage = require('local-storage');
 
-
 const server = http.createServer(function (req, res) {
        readSession(req, res);
 });
@@ -34,7 +33,7 @@ handlers.notfound = function (rep, res) {
 };
 // handlers.users page
 
-handlers.home = function (req, res) {
+handlers.infor = function (req, res) {
 // xu ly submit
     var data = '';
     req.on('data', chunk => {
@@ -47,8 +46,7 @@ handlers.home = function (req, res) {
             let tokenId = createRandomString(20);
             createTokenSession(tokenId, tokenSession);
             localStorage.set('token', tokenId);
-            console.log("chua dang nhap");
-            fs.readFile('./views/homepage.html', 'utf8', function (err, datahtml) {
+            fs.readFile('./views/infor.html', 'utf8', function (err, datahtml) {
                 if (err) {
                     console.log(err);
                 }
@@ -79,9 +77,8 @@ handlers.dashboard = function (req, res){
 // products page
 var router = {
     'login': handlers.login,
-    'home': handlers.home,
-    'notfound': handlers.notfound,
-    'dashboard': handlers.dashboard
+    'infor': handlers.infor,
+    'notfound': handlers.notfound
 }
 
 var createTokenSession = function (fileName, data){
@@ -104,9 +101,7 @@ var createRandomString = function (strLength){
         return str;
     }
 }
-//lấy dữ liệu từ local storage, đọc dữ liệu từ session
-//true -> chua het han
-//false -> da het han
+//lấy dữ liệu từ local storage, đọc dữ liệu từ sessionID
 var readSession = function(req, res){
     var tokenID = localStorage.get("token");
     if (tokenID){
@@ -121,8 +116,8 @@ var readSession = function(req, res){
             expires = JSON.parse(sessionString).expires;
             var now = Date.now();
             if (now> expires){
-                console.log("Da dang nhap nhung het han");
-                console.log("vao cac trang theo kich ban")
+                //Đã đăng nhập nhưng hết hạn
+                //Thực hành đăng nhập và lư lại
                 var parseUrl = url.parse(req.url, true);
                 // //get the path
                 var path = parseUrl.pathname;
@@ -131,8 +126,8 @@ var readSession = function(req, res){
                 chosenHandler(req, res);
             }
             else {
-                console.log("Da dang nhap va chua het han");
-                console.log("vao chao hoi luon")
+                // Đã đăng nhập và chưa hết hạn
+                // chuyển sang trang dashboard
                 fs.readFile('./views/dashboard.html', 'utf8', function (err, datahtml) {
                     if (err) {
                         console.log(err);
@@ -147,8 +142,7 @@ var readSession = function(req, res){
         });
     }
     else {
-        console.log("Chua dang nhap")
-        console.log("vao cac trang theo kich ban")
+        // chưa đăng nhập
         var parseUrl = url.parse(req.url, true);
         // //get the path
         var path = parseUrl.pathname;
